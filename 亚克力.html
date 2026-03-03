@@ -89,17 +89,16 @@ body{
   padding: 0 20px;
 }
 .result-item{
-  background: #fff;
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 12px;
-  border-left: 4px solid #4299E1;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   gap: 15px;
 }
+.result-item:nth-child(even){ background: #E0F2FE; }
+.result-item:nth-child(odd){ background: #F8FAFC; }
 .item-text{
   flex: 1;
   font-size: 14px;
@@ -159,12 +158,9 @@ body{
 <div class="result-wrap" id="resultWrap"></div>
 
 <script>
-// 存储所有生成的提示词
 let allPrompts = [];
 
-// 生成单条提示词（保证20组不重复）
 function createPrompt(industry, index) {
-  // 主营品类+标语变体库（20组不重复，贴合亚克力门头清新/现代风格）
   const variants = [
     "主营品类+清新醒目标语", "特色品类+简约吸睛标语", "招牌品类+清新自然标语",
     "核心品类+现代简约标语", "爆款品类+清新质感标语", "主营项目+简约干净标语",
@@ -174,46 +170,43 @@ function createPrompt(industry, index) {
     "主营产品+现代柔和标语", "特色产品+清新简约标语", "招牌产品+现代质感标语",
     "核心产品+清新干净标语", "爆款产品+现代醒目标语"
   ];
-
-  // 拼接完整提示词（包含所有强制元素）
   return `白天自然光，门头正立面，完整展示，正面平视视角，无透视畸变，无遮挡，亚克力门头，通透精致、发光柔和、现代干净，${industry}店铺门头，亚克力板、发光字、背光字、亚克力灯箱，品牌店名+${variants[index]}，现代简约字体，日间清晰背光发光、通体柔和光，8K高清，商业写实效果图，细节丰富，色彩自然，可直接施工参考`;
 }
 
-// 复制单条提示词（永久变灰）
+// 复制单条提示词（短暂变灰3秒）
 function copySingle(text, btn) {
   navigator.clipboard.writeText(text).then(() => {
     btn.classList.add('copied');
     btn.textContent = "已复制";
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.textContent = "复制";
+    }, 3000);
   });
 }
 
-// 一键复制全部20组
+// 一键复制全部
 function copyAll() {
-  const allText = allPrompts.join("\n\n");
-  navigator.clipboard.writeText(allText).then(() => {
+  navigator.clipboard.writeText(allPrompts.join("\n\n")).then(() => {
     alert("✅ 已成功复制全部20组提示词！");
   });
 }
 
-// 生成20组提示词主函数
 function generatePrompts() {
   const industry = document.getElementById("industryInput").value.trim();
   const genBtn = document.getElementById("genBtn");
   const resultWrap = document.getElementById("resultWrap");
 
-  // 校验输入
   if (!industry) {
     alert("请输入店铺行业类型（如：奶茶咖啡、美妆美甲、文具文创等）");
     return;
   }
 
-  // 按钮加载状态
   genBtn.disabled = true;
   genBtn.textContent = "正在生成...";
   resultWrap.innerHTML = "";
   allPrompts = [];
 
-  // 生成逻辑
   setTimeout(() => {
     let resultHtml = "";
     for (let i = 0; i < 20; i++) {
@@ -226,17 +219,11 @@ function generatePrompts() {
         </div>
       `;
     }
-
-    // 添加一键复制按钮
     resultHtml += `<button class="copy-all-btn" onclick="copyAll()">📋 一键复制全部20组</button>`;
-    
-    // 渲染结果
     resultWrap.innerHTML = resultHtml;
-    
-    // 恢复按钮状态
     genBtn.disabled = false;
     genBtn.textContent = "🚀 生成20组提示词";
-  }, 800);
+  }, 500);
 }
 </script>
 </body>
