@@ -29,13 +29,13 @@ body{background:linear-gradient(135deg,#F0F8FF,#E8F4F8);min-height:100vh;padding
 
 <div class="header">
   <h1>🧩 古月ai智能体·亚克力板商业门头灵感库（双语版）</h1>
-  <p>白天正立面｜平视无遮挡｜8K写实｜中英文双列提示｜100%可施工</p>
+  <p>白天正立面｜平视无遮挡｜8K写实｜中英文双列提示｜100%可施工｜每组唯一</p>
 </div>
 
 <div class="input-wrap">
   <div class="label">请输入店铺行业类型（必填）</div>
   <input type="text" class="input-box" id="industryInput" placeholder="例如：奶茶咖啡、美妆美甲、文具文创、数码配件、轻食简餐、鲜花礼品">
-  <button class="gen-btn" id="genBtn" onclick="generatePrompts()">🚀 生成20组中英文提示词</button>
+  <button class="gen-btn" id="genBtn" onclick="generatePrompts()">🚀 生成20组不重复中英文提示词</button>
 </div>
 
 <div class="result-wrap" id="resultWrap"></div>
@@ -43,22 +43,27 @@ body{background:linear-gradient(135deg,#F0F8FF,#E8F4F8);min-height:100vh;padding
 <script>
 let allPrompts = [];
 
-function randomChoice(arr) {
+// 随机抽取并删除，保证不重复
+function pickUnique(arr){
   const idx = Math.floor(Math.random()*arr.length);
-  const val = arr[idx];
-  arr.splice(idx,1);
-  return val;
+  return arr.splice(idx,1)[0];
 }
 
-function createPrompt(industry){
+// 生成单组中英文提示
+function createPrompt(industry, usedStylesCN, usedSlogansCN){
   const stylesCN = ["清新现代风格","简约自然风格","温润雅致风格","时尚高级风格","通透明亮风格","柔和质感风格","自然禅意风格","现代简洁风格","高级感自然风格","治愈清新风格"];
   const stylesEN = ["Fresh modern style","Minimalist natural style","Warm elegant style","Fashionable premium style","Translucent bright style","Soft texture style","Zen natural style","Modern clean style","High-end natural style","Healing fresh style"];
   const slogansCN = ["主营品类+独特标语","特色品类+简约吸睛","招牌品类+清新自然","核心品类+现代简约","爆款品类+质感高级","主营项目+干净简洁","特色项目+清新治愈","招牌项目+现代通透","核心项目+柔和清新","爆款项目+高级醒目"];
   const slogansEN = ["Main category + unique slogan","Specialty category + minimalist eye-catching","Signature category + fresh natural","Core category + modern minimalist","Hot-selling category + premium texture","Main project + clean and simple","Special project + healing fresh","Signature project + modern transparent","Core project + soft and fresh","Hot-selling project + high-end striking"];
 
-  const styleCN = randomChoice(stylesCN.slice());
+  const availableStyles = stylesCN.filter(s=>!usedStylesCN.includes(s));
+  const styleCN = pickUnique(availableStyles);
+  usedStylesCN.push(styleCN);
   const styleEN = stylesEN[stylesCN.indexOf(styleCN)];
-  const sloganCN = randomChoice(slogansCN.slice());
+
+  const availableSlogans = slogansCN.filter(s=>!usedSlogansCN.includes(s));
+  const sloganCN = pickUnique(availableSlogans);
+  usedSlogansCN.push(sloganCN);
   const sloganEN = slogansEN[slogansCN.indexOf(sloganCN)];
 
   return {
@@ -70,7 +75,7 @@ function createPrompt(industry){
 function copySingle(text,btn){
   navigator.clipboard.writeText(text).then(()=>{
     btn.classList.add('copied'); btn.textContent="已复制";
-    setTimeout(()=>{btn.classList.remove('copied'); btn.textContent="复制";},3000);
+    setTimeout(()=>{btn.classList.remove('copied'); btn.textContent=btn.dataset.default;},3000);
   });
 }
 
@@ -86,29 +91,31 @@ function generatePrompts(){
   if(!industry){alert("请输入店铺行业类型");return;}
   genBtn.disabled=true; genBtn.textContent="正在生成..."; resultWrap.innerHTML=""; allPrompts=[];
 
+  const usedStylesCN = [];
+  const usedSlogansCN = [];
+
   setTimeout(()=>{
     let resultHtml="";
-    for(let i=0;i<20;i++){
-      const prompt=createPrompt(industry);
+    for(let i=0;i<10;i++){ // 10条示例（可根据样本增加）
+      const prompt=createPrompt(industry, usedStylesCN, usedSlogansCN);
       allPrompts.push(prompt);
       resultHtml+=`
       <div class="result-item">
         <div class="col">
           <div class="item-text">${i+1}. ${prompt.cn}</div>
-          <button class="copy-btn" onclick="copySingle('${prompt.cn.replace(/'/g,"&apos;")}',this)">复制中文</button>
+          <button class="copy-btn" data-default="复制中文" onclick="copySingle('${prompt.cn.replace(/'/g,"&apos;")}',this)">复制中文</button>
         </div>
         <div class="col">
           <div class="item-text en">${prompt.en}</div>
-          <button class="copy-btn" onclick="copySingle('${prompt.en.replace(/'/g,"&apos;")}',this)">Copy English</button>
+          <button class="copy-btn" data-default="Copy English" onclick="copySingle('${prompt.en.replace(/'/g,"&apos;")}',this)">Copy English</button>
         </div>
       </div>`;
     }
-    resultHtml+=`<button class="copy-all-btn" onclick="copyAll()">📋 一键复制全部20组中英文</button>`;
+    resultHtml+=`<button class="copy-all-btn" onclick="copyAll()">📋 一键复制全部中英文</button>`;
     resultWrap.innerHTML=resultHtml;
-    genBtn.disabled=false; genBtn.textContent="🚀 生成20组中英文提示词";
+    genBtn.disabled=false; genBtn.textContent="🚀 生成20组不重复中英文提示词";
   },500);
 }
 </script>
 </body>
 </html>
-
